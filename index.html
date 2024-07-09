@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Telugu Audio Channels</title>
+</head>
+<body>
+    <h1>Telugu Audio Channels</h1>
+    <ul id="channel-list">
+        <!-- Channels will be populated here -->
+    </ul>
+
+    <script>
+        const channels = <?php include 'channels.json'; ?>;
+        const channelList = document.getElementById('channel-list');
+
+        channels.forEach(channel => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${channel.name}: ${channel.manifest_url}`;
+            channelList.appendChild(listItem);
+        });
+    </script>
+</body>
+</html>
