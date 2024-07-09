@@ -1,0 +1,67 @@
+name: Refresh Telugu Channels Playlist
+
+on:
+  schedule:
+    - cron: '0 */2 * * *'  # Every 2 hours
+
+jobs:
+  update-playlist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.x
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Filter Telugu channels
+        id: filter_telugu
+        run: |
+          import json
+          import requests
+
+          API_URL = "https://tplayapi.code-crafters.app/321codecrafters/fetcher.json"
+          response = requests.get(API_URL)
+          api_data = response.json()
+
+          telugu_channels = []
+          for channel in api_data:
+            if "languages" in channel and "Telugu" in channel["languages"]:
+              telugu_channel = {
+                "id": channel["id"],
+                "name": channel["name"],
+                "logo_url": channel["logo_url"],
+                "manifest_url": channel["manifest_url"],
+                "languages": ["Telugu"]
+              }
+              telugu_channels.append(telugu_channel)
+
+          with open("channels.json", "w") as f:
+            json.dump(telugu_channels, f, indent=2)
+
+          # Set the output variable
+          filtered_count = len(telugu_channels)
+          filtered_list = ", ".join([channel["name"] for channel in telugu_channels])
+          print(f"::set-output name=filtered_count::{filtered_count}")
+          print(f"::set-output name=filtered_list::{filtered_list}")
+
+      - name: Commit and push changes
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add channels.json
+          git commit -m "Update Telugu channels playlist"
+          git push origin telugu-channels
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+          publish_branch: gh-pages
